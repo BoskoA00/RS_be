@@ -14,14 +14,12 @@ exports.getAll = async (req, res) => {
       "firstName lastName  imagePath"
     );
     if (questions.length === 0) {
-      return res.status(404).json({ message: "No questions found" });
+      return res.status(404).json({ message: "Ne postoje pitanja" });
     }
     res.status(200).json(questions);
   } catch (error) {
     console.log(error);
-    return res
-      .status(500)
-      .json({ message: "There was an error while getting questions" });
+    return res.status(500).json({ message: "Doslo je do greske" });
   }
 };
 
@@ -29,27 +27,29 @@ exports.getQuestionById = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ message: "Invalid question ID" });
+      return res
+        .status(404)
+        .json({ message: "ID nije odgovarajuceg formata." });
     }
     const question = await Questions.findById(id)
       .populate("userId", "firstName lastName")
       .populate("answers", "content ");
     if (!question) {
-      return res.status(404).json({ message: "Question not found." });
+      return res.status(404).json({ message: "Pitanje nije pronadjeno." });
     }
     res.status(200).json(question);
   } catch (error) {
     console.log(error);
-    return res
-      .status(500)
-      .json({ message: "An error occurred while getting question by id." });
+    return res.status(500).json({ message: "Doslo je do greske." });
   }
 };
 exports.getQuestionsByUserId = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ message: "Invalid user ID" });
+      return res
+        .status(404)
+        .json({ message: "ID je neodgovarajuceg formata." });
     }
     const questions = await Questions.find({ userId: id })
       .populate("userId", "firstName lastName")
@@ -57,13 +57,13 @@ exports.getQuestionsByUserId = async (req, res) => {
     if (questions.length === 0) {
       return res
         .status(404)
-        .json({ message: "No questions found for this user" });
+        .json({ message: "Ne postoje pitanja ovog korisnika" });
     }
     res.status(200).json(questions);
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      message: "An error occurred while getting questions by user id.",
+      message: "Doslo je do greske.",
     });
   }
 };
@@ -75,17 +75,23 @@ exports.createQuestion = [
       const requestingUserId = req.user.id;
       const { title, content } = req.body;
       if (!mongoose.Types.ObjectId.isValid(requestingUserId)) {
-        return res.status(404).json({ message: "Invalid user ID" });
+        return res
+          .status(404)
+          .json({ message: "ID nije odgovarajuceg formata." });
       }
       if (!title || !title.trim()) {
-        return res.status(400).json({ message: "Title is required." });
+        return res
+          .status(400)
+          .json({ message: "Naslov pitanja je neophodan." });
       }
       if (!content || !content.trim()) {
-        return res.status(400).json({ message: "Content is required." });
+        return res
+          .status(400)
+          .json({ message: "Sadrzaj pitanja je neophodan." });
       }
       const user = await User.findById(requestingUserId);
       if (!user) {
-        return res.status(404).json({ message: "User not found." });
+        return res.status(404).json({ message: "Korisnik nije pronadjen." });
       }
       const newQuestion = new Questions({
         title,
@@ -101,14 +107,12 @@ exports.createQuestion = [
         .populate("answers");
 
       return res.status(200).json({
-        message: "Question created sucessfully.",
+        message: "Pitanje kreirano uspesno.",
         question: responseQuestion,
       });
     } catch (error) {
       console.log(error);
-      return res
-        .status(500)
-        .json({ message: "An error occurred while creating a question." });
+      return res.status(500).json({ message: "Doslo je do greske." });
     }
   },
 ];
@@ -122,27 +126,31 @@ exports.updateQuestion = [
       const { id } = req.params;
       const { title, content } = req.body;
       if (!mongoose.Types.ObjectId.isValid(requestingUserId)) {
-        return res.status(404).json({ message: "Invalid user ID" });
+        return res
+          .status(404)
+          .json({ message: "ID korisnika nije odgovarajuceg formata." });
       }
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ message: "Invalid question ID" });
+        return res
+          .status(404)
+          .json({ message: "ID pitanja nije odgovarajuceg formata." });
       }
       const question = await Questions.findById(id);
       if (!question) {
-        return res.status(404).json({ message: "Question not found." });
+        return res.status(404).json({ message: "Pitanje ne postoji." });
       }
       if (requestingUserRole != config.UserRoles.ADMINISTRATOR) {
         if (question.userId !== requestingUserId) {
           return res.status(403).json({
-            message: "You do not have permission to perform this action.",
+            message: "Nemate dozvolu za ovu akciju.",
           });
         }
       }
       if ((!title || !title.trim()) && (!content || !content.trim())) {
         return res
           .status(400)
-          .json({ message: "Need atleast one of the fields to do an update." });
+          .json({ message: "Potrebno je barem jedno od polja." });
       }
       if (title) question.title = title;
       if (content) question.content = content;
@@ -152,14 +160,12 @@ exports.updateQuestion = [
         .populate("answers");
 
       return res.status(200).json({
-        message: "Question updated successfully.",
+        message: "Pitanje uspesno izmenjeno.",
         question: responseQuestion,
       });
     } catch (error) {
       console.log(error);
-      return res
-        .status(500)
-        .json({ message: "There was an error while updaing question" });
+      return res.status(500).json({ message: "Doslo je do greske." });
     }
   },
 ];
@@ -171,36 +177,40 @@ exports.deleteQuestion = [
     const requestingUserRole = req.user.role;
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(requestingUserId)) {
-      return res.status(404).json({ message: "Invalid user ID" });
+      return res
+        .status(404)
+        .json({ message: "ID korisnika nije odgovarajuceg formata." });
     }
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ message: "Invalid question ID" });
+      return res
+        .status(404)
+        .json({ message: "ID pitanja nije odgovarajuceg formata." });
     }
     const user = await User.findById(requestingUserId);
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return res.status(404).json({ message: "Korisnik nije pronadjen." });
     }
     const question = await Questions.findById(id);
     if (!question) {
-      return res.status(404).json({ message: "Question not found." });
+      return res.status(404).json({ message: "Pitanje nije pronadjeno." });
     }
     if (requestingUserRole !== config.UserRoles.ADMINISTRATOR) {
       if (question.userId !== requestingUserId) {
         return res.status(403).json({
-          message: "You do not have permission to perform this action.",
+          message: "Nemate dozvolu za ovu akciju.",
         });
       }
     }
     await Answer.deleteMany({ questionId: id });
     await Question.findByIdAndDelete(id);
 
-    res.status(200).json({ message: "Question deleted successfully." });
+    res.status(200).json({ message: "Pitanje uspesno obirsano." });
 
     try {
     } catch (error) {
       console.log(error);
       return res.status(500).json({
-        message: "There was an error while trying to delete the question",
+        message: "Doslo je do greske.",
       });
     }
   },

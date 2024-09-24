@@ -32,24 +32,22 @@ exports.getAll = async (req, res) => {
   try {
     const users = await User.find({});
     if (users.length === 0) {
-      res.status(200).json({ message: "No users found." });
+      res.status(200).json({ message: "Nema korisnika." });
     }
     res.status(200).json({ users });
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while fetching users." });
+    res.status(500).json({ message: "Doslo je do greske." });
   }
 };
 exports.getUserByEmail = async (req, res) => {
   try {
     if (!req.body.email.trim()) {
-      return res.status(400).json({ message: "Email is required." });
+      return res.status(400).json({ message: "Email je neophodan." });
     }
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return res.status(404).json({ message: "Ne postoji korisnik." });
     }
     const userResponse = {
       id: user._id,
@@ -63,9 +61,7 @@ exports.getUserByEmail = async (req, res) => {
     return res.status(200).json({ user: userResponse });
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while fetching user by email." });
+    res.status(500).json({ message: "Doslo je do greske." });
   }
 };
 exports.register = [
@@ -84,12 +80,12 @@ exports.register = [
         role === undefined ||
         !imagePath
       ) {
-        return res.status(400).json({ message: "All fields are required." });
+        return res.status(400).json({ message: "Sva polja su neophodna." });
       }
 
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        return res.status(400).json({ message: "Email already exists." });
+        return res.status(400).json({ message: "Email je vec u upotrebi." });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -107,12 +103,12 @@ exports.register = [
 
       res
         .status(201)
-        .json({ message: "User registered successfully!", user: newUser });
+        .json({ message: "Korisnik uspesno registrovan", user: newUser });
     } catch (error) {
       console.log(error);
       res
         .status(500)
-        .json({ message: "An error occurred during registration." });
+        .json({ message: "Doslo je do greske tokom registracije." });
     }
   },
 ];
@@ -124,16 +120,16 @@ exports.deleteUserByEmail = [
       const requestUserId = req.user.id;
 
       if (!req.body.email.trim()) {
-        return res.status(400).json({ message: "Email is required." });
+        return res.status(400).json({ message: "Email je neophodan." });
       }
       const user = await User.findOne({ email: req.body.email });
       if (!user) {
-        return res.status(404).json({ message: "User not found." });
+        return res.status(404).json({ message: "Korisnik nije pronadjen." });
       }
       if (user._id !== requestUserId) {
         if (requestingUserRole !== config.UserRoles.ADMINISTRATOR) {
           return res.status(403).json({
-            message: "You cannot do this action.",
+            message: "Nemate dozvolu za ovu akciju.",
           });
         }
       }
@@ -151,12 +147,10 @@ exports.deleteUserByEmail = [
 
       await User.findOneAndDelete({ email: req.body.email });
 
-      res.status(200).json({ message: "User deleted successfully!" });
+      res.status(200).json({ message: "Korisnik uspesno izbrisan!" });
     } catch (error) {
       console.log(error);
-      res
-        .status(500)
-        .json({ message: "An error occurred while deleting user by email." });
+      res.status(500).json({ message: "Doslo je do greske." });
     }
   },
 ];
@@ -164,16 +158,18 @@ exports.deleteUserByEmail = [
 exports.getUserById = async (req, res) => {
   try {
     if (!req.params.id) {
-      return res.status(400).json({ message: "User ID is required." });
+      return res.status(400).json({ message: "ID korisnika je neophodan." });
     }
 
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Id is not in correct format." });
+      return res
+        .status(400)
+        .json({ message: "ID nije odgovarajuceg formata." });
     }
 
     const user = await User.findById(req.params.id);
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return res.status(404).json({ message: "Korisnik ne postoji." });
     }
     const userResponse = {
       id: user._id,
@@ -186,9 +182,7 @@ exports.getUserById = async (req, res) => {
     return res.status(200).json({ user: userResponse });
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while fetching user by id." });
+    res.status(500).json({ message: "Doslo je do greske." });
   }
 };
 exports.deleteUserById = [
@@ -200,22 +194,22 @@ exports.deleteUserById = [
       const { id } = req.params;
 
       if (!id) {
-        return res.status(400).json({ message: "User ID is required." });
+        return res.status(400).json({ message: "ID korisnika je neophodan." });
       }
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res
           .status(400)
-          .json({ message: "Id is not in correct format." });
+          .json({ message: "ID korisnika nije odgovarajuceg formata." });
       }
 
       const user = await User.findById(id);
       if (!user) {
-        return res.status(404).json({ message: "User not found." });
+        return res.status(404).json({ message: "Korisnik nije pronadjen." });
       }
       if (user._id != requestUserId) {
         if (requestingUserRole != config.UserRoles.ADMINISTRATOR) {
           return res.status(403).json({
-            message: "You cannot do this action.",
+            message: "Nemate dozvolu za ovu akciju.",
           });
         }
       }
@@ -242,12 +236,10 @@ exports.deleteUserById = [
 
       await User.findByIdAndDelete(id);
 
-      res.status(200).json({ message: "User deleted successfully!" });
+      res.status(200).json({ message: "Korisnik uspesno izbrisan!" });
     } catch (error) {
       console.log(error);
-      res
-        .status(500)
-        .json({ message: "An error occurred while deleting user by ID." });
+      res.status(500).json({ message: "Doslo je do greske." });
     }
   },
 ];
@@ -263,15 +255,17 @@ exports.updateUser = [
       const requestUserId = req.user.id;
 
       if (!id) {
-        return res.status(400).json({ message: "User ID is required." });
+        return res.status(400).json({ message: "ID korisnika je neophodan." });
       }
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ message: "Invalid user ID format." });
+        return res
+          .status(400)
+          .json({ message: "ID nije odgovarajuceg formata." });
       }
 
       const user = await User.findById(id);
       if (!user) {
-        return res.status(404).json({ message: "User not found." });
+        return res.status(404).json({ message: "Korisnik nije pronadjen." });
       }
 
       if (
@@ -279,7 +273,7 @@ exports.updateUser = [
         requestingUserRole !== config.UserRoles.ADMINISTRATOR
       ) {
         return res.status(403).json({
-          message: "You do not have permission to update this profile.",
+          message: "Nemate dozvolu za ovu akciju.",
         });
       }
 
@@ -325,14 +319,12 @@ exports.updateUser = [
       };
 
       res.status(200).json({
-        message: "User details updated successfully!",
+        message: "Korisnik uspesno izmenjen!",
         user: userResponse,
       });
     } catch (error) {
       console.log(error);
-      res
-        .status(500)
-        .json({ message: "An error occurred while updating user details." });
+      res.status(500).json({ message: "Doslo je do greske." });
     }
   },
 ];
@@ -345,19 +337,21 @@ exports.PromoteUser = [
       const requestingUserRole = req.user.role;
 
       if (!id) {
-        return res.status(400).json({ message: "User ID is required." });
+        return res.status(400).json({ message: "ID korisnika je neophodan." });
       }
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ message: "Invalid user ID format." });
+        return res
+          .status(400)
+          .json({ message: "ID nije odgovarajuceg formata." });
       }
       const user = await User.findById(id);
       if (!user) {
-        return res.status(404).json({ message: "User not found." });
+        return res.status(404).json({ message: "Korisnik nije pronadjen." });
       }
 
       if (requestingUserRole < config.UserRoles.ADMINISTRATOR) {
         return res.status(403).json({
-          message: "You do not have permission to perform this action.",
+          message: "Nemate dozvolu za ovu akciju.",
         });
       }
 
@@ -369,23 +363,21 @@ exports.PromoteUser = [
           user.role = 2;
           await user.save();
         }
-        return res.status(404).json({ message: "User role out of bounds." });
+        return res.status(404).json({ message: "Uloga korisnika van dometa." });
       }
 
       if (user.role === config.UserRoles.ADMINISTRATOR) {
         return res
           .status(404)
-          .json({ message: "User is already at the highest role." });
+          .json({ message: "Korisnik je vec poseduje najvecu ulogu." });
       }
 
       user.role++;
       await user.save();
-      return res.status(200).json({ message: "User successfully promoted." });
+      return res.status(200).json({ message: "Korisnik uspesno unapredjen." });
     } catch (error) {
       console.log(error);
-      res
-        .status(500)
-        .json({ message: "An error occurred while promoting user." });
+      res.status(500).json({ message: "Doslo je do greske." });
     }
   },
 ];
@@ -398,30 +390,32 @@ exports.DemoteUser = [
       const requestingUserRole = req.user.role;
 
       if (!id) {
-        return res.status(400).json({ message: "User ID is required." });
+        return res.status(400).json({ message: "ID korisnika je neophodan." });
       }
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ message: "Invalid user ID format." });
+        return res
+          .status(400)
+          .json({ message: "ID nije odgovarajuceg formata." });
       }
       const user = await User.findById(id);
       if (!user) {
-        return res.status(404).json({ message: "User not found." });
+        return res.status(404).json({ message: "Korisnik nije pronadjen." });
       }
 
       if (requestingUserRole < config.UserRoles.ADMINISTRATOR) {
         return res.status(403).json({
-          message: "You do not have permission to perform this action.",
+          message: "Nemate dozvolu za ovu akciju.",
         });
       }
 
       if (user.role > 2 || user.role < 0) {
-        return res.status(404).json({ message: "User role out of bounds." });
+        return res.status(404).json({ message: "Uloga korisnika van dometa." });
       }
 
       if (user.role === config.UserRoles.BUYER) {
         return res
           .status(404)
-          .json({ message: "User is already at the lowest role." });
+          .json({ message: "Korisnik je vec poseduje najnizu ulozi." });
       }
 
       if (user.role === config.UserRoles.SELLER) {
@@ -441,12 +435,10 @@ exports.DemoteUser = [
 
       user.role--;
       await user.save();
-      return res.status(200).json({ message: "User successfully demoted." });
+      return res.status(200).json({ message: "Korisnik uspesno unazadjen." });
     } catch (error) {
       console.log(error);
-      res
-        .status(500)
-        .json({ message: "An error occurred while demoting user." });
+      res.status(500).json({ message: "Doslo je do greske." });
     }
   },
 ];
@@ -456,19 +448,17 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required." });
+      return res.status(400).json({ message: "Email i lozinka su neophodni." });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: "User doesn't exist." });
+      return res.status(401).json({ message: "Korisnik ne postoji." });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid  password." });
+      return res.status(401).json({ message: "Neodgovarajuca lozinka." });
     }
 
     const token = jwt.sign(
@@ -487,13 +477,13 @@ exports.login = async (req, res) => {
     };
 
     res.status(200).json({
-      message: "Login successful.",
+      message: "Usepsno logovanje.",
       user: userResponse,
       token,
     });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "An error occurred while logging in." });
+    res.status(500).json({ message: "Doslo je do greske." });
   }
 };
 exports.searchUsersByEmail = async (req, res) => {
@@ -503,7 +493,7 @@ exports.searchUsersByEmail = async (req, res) => {
     if (!wantedEmail) {
       return res
         .status(400)
-        .json({ message: "Email substring query parameter is required." });
+        .json({ message: "Potreban je parametar za pretragu." });
     }
 
     const regex = new RegExp(wantedEmail, "i");
@@ -511,7 +501,7 @@ exports.searchUsersByEmail = async (req, res) => {
     const users = await User.find({ email: regex });
 
     if (users.length === 0) {
-      return res.status(200).json({ message: "No users found." });
+      return res.status(200).json({ message: "Nisu pronadjeni korisnici." });
     }
 
     const usersResponse = users.map((user) => ({
@@ -526,8 +516,6 @@ exports.searchUsersByEmail = async (req, res) => {
     return res.status(200).json({ users: usersResponse });
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while searching for users." });
+    res.status(500).json({ message: "Doslo je do greske." });
   }
 };
