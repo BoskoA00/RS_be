@@ -22,7 +22,7 @@ exports.getAll = async (req, res) => {
     res.status(200).json(ads);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Doslo je do greske." });
+    res.status(500).json({ message: "Došlo je do greške." });
   }
 };
 exports.getAdById = async (req, res) => {
@@ -31,7 +31,7 @@ exports.getAdById = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res
         .status(500)
-        .json({ message: "ID oglasa nije odgovarajuceg formata." });
+        .json({ message: "ID oglasa nije odgovarajućeg formata." });
     }
     const ad = await Ads.findById(id).populate("userId", "firstName lastName");
     if (!ad) {
@@ -40,7 +40,7 @@ exports.getAdById = async (req, res) => {
     res.status(200).json(ad);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Doslo je do greske." });
+    res.status(500).json({ message: "Došlo je do greške." });
   }
 };
 
@@ -56,12 +56,12 @@ exports.createAd = [
       if (!mongoose.Types.ObjectId.isValid(requestingUserID)) {
         return res
           .status(404)
-          .json({ message: "ID korisnika nije odgovrajuceg formata." });
+          .json({ message: "ID korisnika nije odgovarajućeg formata." });
       }
 
       const user = await User.findById(requestingUserID);
       if (!user) {
-        return res.status(404).json({ message: "Korisnik nije pronadjen." });
+        return res.status(404).json({ message: "Korisnik nije pronađen." });
       }
 
       if (
@@ -70,7 +70,7 @@ exports.createAd = [
       ) {
         return res
           .status(403)
-          .json({ message: "Korisnik nema mogucnost kreiranja oglasa." });
+          .json({ message: "Korisnik nema mogućnost kreiranja oglasa." });
       }
 
       if (!title || !title.trim()) {
@@ -80,7 +80,7 @@ exports.createAd = [
         return res.status(400).json({ message: "Grad je neophodan." });
       }
       if (!country || !country.trim()) {
-        return res.status(400).json({ message: "Zemlja je neophodna." });
+        return res.status(400).json({ message: "Država je neophodna." });
       }
       if (price <= 0 || isNaN(price)) {
         return res
@@ -90,10 +90,10 @@ exports.createAd = [
       if (size <= 0 || isNaN(size)) {
         return res
           .status(400)
-          .json({ message: "Velicina mora biti pozitivan broj" });
+          .json({ message: "Veličina mora biti pozitivan broj" });
       }
       if (!(config.AdTypes.RENTING == type || config.AdTypes.SELLING == type)) {
-        return res.status(400).json({ message: "Neodgovarajuci tip oglasa." });
+        return res.status(400).json({ message: "Neodgovarajući tip oglasa." });
       }
 
       const newAd = new Ads({
@@ -128,10 +128,10 @@ exports.createAd = [
       await user.save();
 
       const returnAd = await Ads.findById(savedAd._id);
-      res.status(200).json({ message: "Oglas uspesno kreiran", ad: returnAd });
+      res.status(200).json({ message: "Oglas uspešno kreiran", ad: returnAd });
     } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Doslo je do greske." });
+      res.status(500).json({ message: "Došlo je do greške." });
     }
   },
 ];
@@ -147,18 +147,18 @@ exports.deleteAd = [
       if (!mongoose.Types.ObjectId.isValid(requestingUserID)) {
         return res
           .status(404)
-          .json({ message: "ID korisnika nije odgovarajuceg formata." });
+          .json({ message: "ID korisnika nije odgovarajućeg formata." });
       }
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res
           .status(500)
-          .json({ message: "ID oglasa nije odgovarajuceg formata." });
+          .json({ message: "ID oglasa nije odgovarajućeg formata." });
       }
 
       const adToDelete = await Ads.findById(id);
       if (!adToDelete) {
-        return res.status(404).json({ message: "Oglas nije pronadjen." });
+        return res.status(404).json({ message: "Oglas nije pronađen." });
       }
 
       if (requestingUserRole != config.UserRoles.ADMINISTRATOR) {
@@ -178,10 +178,10 @@ exports.deleteAd = [
 
       await Ads.findByIdAndDelete(id);
 
-      res.status(200).json({ message: "Oglas uspesno izbrisan!" });
+      res.status(200).json({ message: "Oglas uspešno izbrisan!" });
     } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Doslo je do greske." });
+      res.status(500).json({ message: "Došlo je do greške." });
     }
   },
 ];
@@ -206,7 +206,7 @@ exports.updateAd = [
       }
       const adToUpdate = await Ads.findById(id);
       if (!adToUpdate) {
-        return res.status(404).json({ message: "Oglas nije pronadjen." });
+        return res.status(404).json({ message: "Oglas nije pronađen." });
       }
       if (requestingUserRole != config.UserRoles.ADMINISTRATOR) {
         if (requestingUserID != adToUpdate.userId) {
@@ -241,10 +241,10 @@ exports.updateAd = [
       );
       res
         .status(200)
-        .json({ message: "Oglas uspesno izmenjen", ad: updatedAd });
+        .json({ message: "Oglas uspešno izmenjen", ad: updatedAd });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: "Doslo je do greske." });
+      return res.status(500).json({ message: "Došlo je do greške." });
     }
   },
 ];
@@ -270,7 +270,7 @@ exports.getAdsByUser = async (req, res) => {
     res.status(200).json(ads);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Doslo je do greske." });
+    res.status(500).json({ message: "Došlo je do greške." });
   }
 };
 exports.getAdsBySearch = async (req, res) => {
@@ -320,7 +320,7 @@ exports.getAdsBySearch = async (req, res) => {
     res.status(200).json(ads);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Doslo je do greske." });
+    res.status(500).json({ message: "Došlo je do greške." });
   }
 };
 

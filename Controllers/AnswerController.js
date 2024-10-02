@@ -16,7 +16,7 @@ exports.getAll = async (req, res) => {
     return res.status(200).json(answers);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Doslo je do greske." });
+    return res.status(500).json({ message: "Došlo je do greške." });
   }
 };
 
@@ -24,19 +24,19 @@ exports.getAnswerById = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Neodgovarajuci format ID-ja." });
+      return res.status(400).json({ message: "Neodgovarajući format ID-ja." });
     }
     const answer = await Answer.findById(id).populate(
       "userId",
       "firstName lastName"
     );
     if (!answer) {
-      return res.status(404).json({ message: "Odgovor nije pronadjen." });
+      return res.status(404).json({ message: "Odgovor nije pronađen." });
     }
     return res.status(200).json(answer);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Doslo je do greske." });
+    return res.status(500).json({ message: "Došlo je do greške." });
   }
 };
 
@@ -44,11 +44,11 @@ exports.getAnswerByQuestion = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Neodgovarajuci format ID-ja." });
+      return res.status(400).json({ message: "Neodgovarajući format ID-ja." });
     }
     const question = await Question.findById(id);
     if (!question) {
-      return res.status(404).json({ message: "Pitanje nije pronadjeno." });
+      return res.status(404).json({ message: "Pitanje nije pronađeno." });
     }
     const answers = await Answer.find({ questionId: id }).populate(
       "userId",
@@ -60,7 +60,7 @@ exports.getAnswerByQuestion = async (req, res) => {
     return res.status(200).json(answers);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Doslo je do greske." });
+    return res.status(500).json({ message: "Došlo je do greške." });
   }
 };
 
@@ -70,7 +70,7 @@ exports.getAnswersByUserId = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res
         .status(400)
-        .json({ message: "ID je neodgovarajuceg formata." });
+        .json({ message: "ID je neodgovarajućeg formata." });
     }
     const answers = await Answer.find({ userId: id }).populate(
       "questionId",
@@ -84,7 +84,7 @@ exports.getAnswersByUserId = async (req, res) => {
     return res.status(200).json(answers);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Doslo je do greske." });
+    return res.status(500).json({ message: "Došlo je do greške." });
   }
 };
 
@@ -97,21 +97,21 @@ exports.createAnswer = [
       if (!mongoose.Types.ObjectId.isValid(requestingUserId)) {
         return res
           .status(400)
-          .json({ message: "Neodgovarajuci ID korisnika." });
+          .json({ message: "Neodgovarajući ID korisnika." });
       }
       if (!mongoose.Types.ObjectId.isValid(questionId)) {
-        return res.status(400).json({ message: "Neodgovarajuci ID pitanja." });
+        return res.status(400).json({ message: "Neodgovarajući ID pitanja." });
       }
       const user = await User.findById(requestingUserId);
       if (!user) {
-        return res.status(404).json({ message: "Korisnik nije pronadjen." });
+        return res.status(404).json({ message: "Korisnik nije pronađen." });
       }
       const question = await Question.findById(questionId);
       if (!question) {
-        return res.status(404).json({ message: "Pitanje nije pronadjeno." });
+        return res.status(404).json({ message: "Pitanje nije pronađeno." });
       }
       if (!content || !content.trim()) {
-        return res.status(400).json({ message: "Sadrzaj je neophodan." });
+        return res.status(400).json({ message: "Sadržaj je neophodan." });
       }
       const answer = new Answer({
         userId: requestingUserId,
@@ -128,12 +128,12 @@ exports.createAnswer = [
         .populate("questionId", "title content");
 
       return res.status(201).json({
-        message: "Odgovor usepsno kreiran.",
+        message: "Odgovor uspešno kreiran.",
         answer: answerResponse,
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: "Doslo je do greske." });
+      return res.status(500).json({ message: "Došlo je do greške." });
     }
   },
 ];
@@ -148,21 +148,21 @@ exports.deleteAnswer = [
       if (!mongoose.Types.ObjectId.isValid(requestingUserId)) {
         return res
           .status(404)
-          .json({ message: "ID korisnika nije odgovarajuceg formata." });
+          .json({ message: "ID korisnika nije odgovarajućeg formata." });
       }
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res
           .status(400)
-          .json({ message: "ID odgovora nije odgovarajuceg formata" });
+          .json({ message: "ID odgovora nije odgovarajućeg formata" });
       }
       const user = await User.findById(requestingUserId);
       if (!user) {
-        return res.status(404).json({ message: "Korisnik nije pronadjen." });
+        return res.status(404).json({ message: "Korisnik nije pronađen." });
       }
 
       const answer = await Answer.findById(id);
       if (!answer) {
-        return res.status(404).json({ message: "Odgovor nije pronadjen." });
+        return res.status(404).json({ message: "Odgovor nije pronađen." });
       }
       if (requestingUserRole != config.UserRoles.ADMINISTRATOR) {
         if (requestingUserId != answer.userId)
@@ -177,10 +177,10 @@ exports.deleteAnswer = [
       await user.save();
       await Answer.findByIdAndDelete(id);
 
-      return res.status(200).json({ message: "Odgovor usepsno izbrisan." });
+      return res.status(200).json({ message: "Odgovor uspešno izbrisan." });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: "Doslo je do greske." });
+      return res.status(500).json({ message: "Došlo je do greške." });
     }
   },
 ];
@@ -196,20 +196,20 @@ exports.updateAnswer = [
       if (!mongoose.Types.ObjectId.isValid(requestingUserId)) {
         return res
           .status(404)
-          .json({ message: "ID korisnika nije odgovarajuceg formata." });
+          .json({ message: "ID korisnika nije odgovarajućeg formata." });
       }
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res
           .status(400)
-          .json({ message: "ID odgovora nije odgovarajuceg formata." });
+          .json({ message: "ID odgovora nije odgovarajućeg formata." });
       }
       const user = await User.findById(requestingUserId);
       if (!user) {
-        return res.status(404).json({ message: "Korisnik nije pronadjen." });
+        return res.status(404).json({ message: "Korisnik nije pronađen." });
       }
       const answer = await Answer.findById(id);
       if (!answer) {
-        return res.status(404).json({ message: "Odgovor nije pronadjen" });
+        return res.status(404).json({ message: "Odgovor nije pronađen" });
       }
       if (requestingUserRole != config.UserRoles.ADMINISTRATOR) {
         if (requestingUserId != answer.userId)
@@ -218,17 +218,17 @@ exports.updateAnswer = [
             .json({ message: "Nemate dozvolu za ovu akciju." });
       }
       if (!content || !content.trim()) {
-        return res.status(400).json({ message: "Sadrzaj je neophodan." });
+        return res.status(400).json({ message: "Sadržaj je neophodan." });
       }
       answer.content = content;
       const updatedAnswer = await answer.save();
       return res.status(200).json({
-        message: "Odgovor uspesno izmenjen.",
+        message: "Odgovor uspešno izmenjen.",
         answer: updatedAnswer,
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: "Doslo je do greske." });
+      return res.status(500).json({ message: "Došlo je do greške." });
     }
   },
 ];

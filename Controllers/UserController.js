@@ -37,7 +37,7 @@ exports.getAll = async (req, res) => {
     res.status(200).json({ users });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Doslo je do greske." });
+    res.status(500).json({ message: "Došlo je do greške." });
   }
 };
 exports.getUserByEmail = async (req, res) => {
@@ -61,7 +61,7 @@ exports.getUserByEmail = async (req, res) => {
     return res.status(200).json({ user: userResponse });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Doslo je do greske." });
+    res.status(500).json({ message: "Došlo je do greške." });
   }
 };
 exports.register = [
@@ -85,7 +85,7 @@ exports.register = [
 
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        return res.status(400).json({ message: "Email je vec u upotrebi." });
+        return res.status(400).json({ message: "Email je već u upotrebi." });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -103,12 +103,12 @@ exports.register = [
 
       res
         .status(201)
-        .json({ message: "Korisnik uspesno registrovan", user: newUser });
+        .json({ message: "Korisnik uspešno registrovan", user: newUser });
     } catch (error) {
       console.log(error);
       res
         .status(500)
-        .json({ message: "Doslo je do greske tokom registracije." });
+        .json({ message: "Došlo je do greške tokom registracije." });
     }
   },
 ];
@@ -124,7 +124,7 @@ exports.deleteUserByEmail = [
       }
       const user = await User.findOne({ email: req.body.email });
       if (!user) {
-        return res.status(404).json({ message: "Korisnik nije pronadjen." });
+        return res.status(404).json({ message: "Korisnik nije pronađen." });
       }
       if (user._id !== requestUserId) {
         if (requestingUserRole !== config.UserRoles.ADMINISTRATOR) {
@@ -147,10 +147,10 @@ exports.deleteUserByEmail = [
 
       await User.findOneAndDelete({ email: req.body.email });
 
-      res.status(200).json({ message: "Korisnik uspesno izbrisan!" });
+      res.status(200).json({ message: "Korisnik uspešno izbrisan!" });
     } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Doslo je do greske." });
+      res.status(500).json({ message: "Došlo je do greške." });
     }
   },
 ];
@@ -164,7 +164,7 @@ exports.getUserById = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res
         .status(400)
-        .json({ message: "ID nije odgovarajuceg formata." });
+        .json({ message: "ID nije odgovarajućeg formata." });
     }
 
     const user = await User.findById(req.params.id);
@@ -182,7 +182,7 @@ exports.getUserById = async (req, res) => {
     return res.status(200).json({ user: userResponse });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Doslo je do greske." });
+    res.status(500).json({ message: "Došlo je do greške." });
   }
 };
 exports.deleteUserById = [
@@ -199,12 +199,12 @@ exports.deleteUserById = [
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res
           .status(400)
-          .json({ message: "ID korisnika nije odgovarajuceg formata." });
+          .json({ message: "ID korisnika nije odgovarajućeg formata." });
       }
 
       const user = await User.findById(id);
       if (!user) {
-        return res.status(404).json({ message: "Korisnik nije pronadjen." });
+        return res.status(404).json({ message: "Korisnik nije pronađen." });
       }
       if (user._id != requestUserId) {
         if (requestingUserRole != config.UserRoles.ADMINISTRATOR) {
@@ -236,10 +236,10 @@ exports.deleteUserById = [
 
       await User.findByIdAndDelete(id);
 
-      res.status(200).json({ message: "Korisnik uspesno izbrisan!" });
+      res.status(200).json({ message: "Korisnik uspešno izbrisan!" });
     } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Doslo je do greske." });
+      res.status(500).json({ message: "Došlo je do greške." });
     }
   },
 ];
@@ -260,12 +260,12 @@ exports.updateUser = [
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res
           .status(400)
-          .json({ message: "ID nije odgovarajuceg formata." });
+          .json({ message: "ID nije odgovarajućeg formata." });
       }
 
       const user = await User.findById(id);
       if (!user) {
-        return res.status(404).json({ message: "Korisnik nije pronadjen." });
+        return res.status(404).json({ message: "Korisnik nije pronađen." });
       }
 
       if (
@@ -319,12 +319,12 @@ exports.updateUser = [
       };
 
       res.status(200).json({
-        message: "Korisnik uspesno izmenjen!",
+        message: "Korisnik uspešno izmenjen!",
         user: userResponse,
       });
     } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Doslo je do greske." });
+      res.status(500).json({ message: "Došlo je do greške." });
     }
   },
 ];
@@ -342,11 +342,11 @@ exports.PromoteUser = [
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res
           .status(400)
-          .json({ message: "ID nije odgovarajuceg formata." });
+          .json({ message: "ID nije odgovarajućeg formata." });
       }
       const user = await User.findById(id);
       if (!user) {
-        return res.status(404).json({ message: "Korisnik nije pronadjen." });
+        return res.status(404).json({ message: "Korisnik nije pronađen." });
       }
 
       if (requestingUserRole < config.UserRoles.ADMINISTRATOR) {
@@ -369,15 +369,15 @@ exports.PromoteUser = [
       if (user.role === config.UserRoles.ADMINISTRATOR) {
         return res
           .status(404)
-          .json({ message: "Korisnik je vec poseduje najvecu ulogu." });
+          .json({ message: "Korisnik je vec poseduje najveću ulogu." });
       }
 
       user.role++;
       await user.save();
-      return res.status(200).json({ message: "Korisnik uspesno unapredjen." });
+      return res.status(200).json({ message: "Korisnik uspešno unapredjen." });
     } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Doslo je do greske." });
+      res.status(500).json({ message: "Došlo je do greške." });
     }
   },
 ];
@@ -395,11 +395,11 @@ exports.DemoteUser = [
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res
           .status(400)
-          .json({ message: "ID nije odgovarajuceg formata." });
+          .json({ message: "ID nije odgovarajućeg formata." });
       }
       const user = await User.findById(id);
       if (!user) {
-        return res.status(404).json({ message: "Korisnik nije pronadjen." });
+        return res.status(404).json({ message: "Korisnik nije pronađen." });
       }
 
       if (requestingUserRole < config.UserRoles.ADMINISTRATOR) {
@@ -415,7 +415,7 @@ exports.DemoteUser = [
       if (user.role === config.UserRoles.BUYER) {
         return res
           .status(404)
-          .json({ message: "Korisnik je vec poseduje najnizu ulozi." });
+          .json({ message: "Korisnik je vec poseduje najnižu ulozi." });
       }
 
       if (user.role === config.UserRoles.SELLER) {
@@ -435,10 +435,10 @@ exports.DemoteUser = [
 
       user.role--;
       await user.save();
-      return res.status(200).json({ message: "Korisnik uspesno unazadjen." });
+      return res.status(200).json({ message: "Korisnik uspešno unazadjen." });
     } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Doslo je do greske." });
+      res.status(500).json({ message: "Došlo je do greške." });
     }
   },
 ];
@@ -458,7 +458,7 @@ exports.login = async (req, res) => {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Neodgovarajuca lozinka." });
+      return res.status(401).json({ message: "Pogrešna lozinka." });
     }
 
     const token = jwt.sign(
@@ -477,13 +477,13 @@ exports.login = async (req, res) => {
     };
 
     res.status(200).json({
-      message: "Usepsno logovanje.",
+      message: "Uspešno logovanje.",
       user: userResponse,
       token,
     });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Doslo je do greske." });
+    res.status(500).json({ message: "Došlo je do greške." });
   }
 };
 exports.searchUsersByEmail = async (req, res) => {
@@ -501,7 +501,7 @@ exports.searchUsersByEmail = async (req, res) => {
     const users = await User.find({ email: regex });
 
     if (users.length === 0) {
-      return res.status(200).json({ message: "Nisu pronadjeni korisnici." });
+      return res.status(200).json({ message: "Nisu pronađeni korisnici." });
     }
 
     const usersResponse = users.map((user) => ({
@@ -516,6 +516,6 @@ exports.searchUsersByEmail = async (req, res) => {
     return res.status(200).json({ users: usersResponse });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Doslo je do greske." });
+    res.status(500).json({ message: "Došlo je do greške." });
   }
 };
