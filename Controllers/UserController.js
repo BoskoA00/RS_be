@@ -10,6 +10,7 @@ const bcrypt = require("bcrypt");
 const config = require("../config.js");
 const jwt = require("jsonwebtoken");
 const authenticateToken = require("../Middleware/AuthenticationMiddleware.js");
+const Answer = require("../Models/Answer.js");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -70,6 +71,7 @@ exports.register = [
     try {
       const { firstName, lastName, email, password, role } = req.body;
       const imagePath = req.file ? `userImages/${req.file.filename}` : null;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (
         !firstName ||
@@ -82,7 +84,9 @@ exports.register = [
       ) {
         return res.status(400).json({ message: "Sva polja su neophodna." });
       }
-
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Email nije validan." });
+      }
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ message: "Email je već u upotrebi." });
@@ -118,9 +122,13 @@ exports.deleteUserByEmail = [
     try {
       const requestingUserRole = req.user.role;
       const requestUserId = req.user.id;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!req.body.email.trim()) {
         return res.status(400).json({ message: "Email je neophodan." });
+      }
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Email nije validan." });
       }
       const user = await User.findOne({ email: req.body.email });
       if (!user) {
@@ -233,6 +241,8 @@ exports.deleteUserById = [
       ) {
         fs.unlinkSync(path.join(__dirname, "../", user.imagePath));
       }
+      await Answer.deleteMany({ userId: user._id });
+      await Question.deleteMany({ userId: user._id });
 
       await User.findByIdAndDelete(id);
 
@@ -253,6 +263,7 @@ exports.updateUser = [
       const { firstName, lastName, email, password, role } = req.body;
       const requestingUserRole = req.user.role;
       const requestUserId = req.user.id;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!id) {
         return res.status(400).json({ message: "ID korisnika je neophodan." });
@@ -284,6 +295,9 @@ exports.updateUser = [
         user.lastName = lastName;
       }
       if (email && email !== user.email) {
+        if (!emailRegex.test(email)) {
+          return res.status(400).json({ message: "Email nije validan." });
+        }
         user.email = email;
       }
       if (password) {
@@ -446,9 +460,13 @@ exports.DemoteUser = [
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!email || !password) {
       return res.status(400).json({ message: "Email i lozinka su neophodni." });
+    }
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Email nije validan." });
     }
 
     const user = await User.findOne({ email });

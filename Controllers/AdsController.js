@@ -12,19 +12,32 @@ const upload = multer({ dest: "temp/" });
 
 exports.getAll = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 4;
+    const skip = (page - 1) * limit;
     const ads = await Ads.find({})
+      .skip(skip)
+      .limit(limit)
       .populate("userId", "firstName lastName")
       .populate("picturePaths");
+    const totalAds = await Ads.countDocuments();
+
     if (ads.length === 0) {
       return res.status(200).json({ message: "Nema oglasa." });
     }
 
-    res.status(200).json(ads);
+    res.status(200).json({
+      ads: ads.reverse(),
+      totalAds,
+      totalPages: Math.ceil(totalAds / limit),
+      currentPage: page,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Došlo je do greške." });
   }
 };
+
 exports.getAdById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -275,41 +288,42 @@ exports.getAdsByUser = async (req, res) => {
 };
 exports.getAdsBySearch = async (req, res) => {
   try {
-    const { city, country, maxPrice, minPrice, minSize, maxSize, type } =
-      req.query;
+    const {
+      city,
+      country,
+      maxPrice,
+      minPrice,
+      minSize,
+      maxSize,
+      type,
+      page = 1,
+    } = req.query;
+    const limit = 4;
+    const skip = (page - 1) * limit;
     const query = {};
 
-    if (city && city.trim() !== "") {
-      query.city = city;
-    }
-
-    if (country && country.trim() !== "") {
-      query.country = country;
-    }
-
-    if (maxPrice && parseFloat(maxPrice) > 0) {
+    if (city && city.trim() !== "") query.city = city;
+    if (country && country.trim() !== "") query.country = country;
+    if (maxPrice && parseFloat(maxPrice) > 0)
       query.price = { ...query.price, $lte: parseFloat(maxPrice) };
-    }
-
-    if (minPrice && parseFloat(minPrice) > 0) {
+    if (minPrice && parseFloat(minPrice) > 0)
       query.price = { ...query.price, $gte: parseFloat(minPrice) };
-    }
-
-    if (minSize && parseFloat(minSize) > 0) {
+    if (minSize && parseFloat(minSize) > 0)
       query.size = { ...query.size, $gte: parseFloat(minSize) };
-    }
-
-    if (maxSize && parseFloat(maxSize) > 0) {
+    if (maxSize && parseFloat(maxSize) > 0)
       query.size = { ...query.size, $lte: parseFloat(maxSize) };
-    }
-
     if (
       type != "" &&
       (type == config.AdTypes.SELLING || type == config.AdTypes.RENTING)
-    ) {
+    )
       query.type = parseInt(type);
-    }
-    const ads = await Ads.find(query).populate("userId", "firstName lastName");
+
+    const ads = await Ads.find(query)
+      .skip(skip)
+      .limit(limit)
+      .populate("userId", "firstName lastName");
+
+    const totalAds = await Ads.countDocuments(query);
 
     if (ads.length === 0) {
       return res
@@ -317,7 +331,12 @@ exports.getAdsBySearch = async (req, res) => {
         .json({ message: "Nema oglasa koji odgovaraju parametrima." });
     }
 
-    res.status(200).json(ads);
+    res.status(200).json({
+      ads,
+      totalAds,
+      totalPages: Math.ceil(totalAds / limit),
+      currentPage: parseInt(page),
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Došlo je do greške." });
